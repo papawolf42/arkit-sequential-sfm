@@ -5,6 +5,18 @@ from pathlib import Path
 import math
 
 import numpy as np
+from PIL import Image
+
+
+def inspect_image_metadata(path, frame):
+    """회전·리사이즈 없이 저장 크기와 방향 태그를 읽는다."""
+    with Image.open(path) as image:
+        return {
+            'stored_size': list(image.size),
+            'size_matches': image.size == (frame['w'], frame['h']),
+            'manifest_orientation': frame.get('image_orientation'),
+            'exif_orientation': image.getexif().get(274),
+        }
 
 
 def world_to_camera(camera_to_world):
