@@ -6,3 +6,7 @@ __pycache__/
 *.sqlite3
 .env
 *.pyc
+
+# Local scratch file and generated reconstruction artifacts
+/a
+/output/
