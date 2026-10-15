@@ -37,6 +37,7 @@ def test_inspect_capture_prints_count_first_frame_and_image_existence(tmp_path, 
         'missing_images': [] if image_exists else [frame['file_path']],
         'first_camera_position': [10, 2, 3],
         'first_pair_distance_m': None,
+        'first_camera_forward': [0, 0, -1],
     }
 
 

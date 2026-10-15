@@ -19,9 +19,11 @@ if __name__ == '__main__':
             missing_images.append(frame['file_path'])
 
     camera_position = None
+    camera_forward = None
     if frames:
         matrix = frames[0]['transform_matrix']
         camera_position = [matrix[0][3], matrix[1][3], matrix[2][3]]
+        camera_forward = [-matrix[0][2], -matrix[1][2], -matrix[2][2]]
 
     # ARKit 추정 위치 사이의 직선거리이며 실제 이동 거리의 정답은 아니다.
     first_pair_distance = None
@@ -40,4 +42,5 @@ if __name__ == '__main__':
         'missing_images': missing_images,
         'first_camera_position': camera_position,
         'first_pair_distance_m': first_pair_distance,
+        'first_camera_forward': camera_forward,
     }, indent=2))
