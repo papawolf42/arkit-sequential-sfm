@@ -1,0 +1,35 @@
+# ARKit-Guided Incremental Hybrid SfM 프로젝트 문서 (docs/)
+
+본 문서는 iPhone 240장 실내 공간 촬영 데이터를 바탕으로, **ARKit(VIO) + COLMAP(SfM) + Depth Anything 3(AI Depth)** 3대 기술을 결합하여 이중벽과 허공 부유물 없는 고정밀 3D 재구성을 달성하기 위한 엔지니어링 명세서 및 가이드 모음입니다.
+
+---
+
+## 📚 문서 색인 및 로드맵
+
+1. **[0001 — 시스템 개요 및 3대 원천 상호 보완 설계서](0001-시스템-개요-및-3대원천-상호보완-설계서.md)**
+   - ARKit, COLMAP, DA3의 강점과 한계 분석
+   - "깊이 정보 충돌 시 신뢰도 동적 배분(Multi-Cue Uncertainty Gating)" 수학적 정식화
+   - 통합 최적화 목적함수 및 전체 아키텍처 다이어그램
+
+2. **[0002 — 1단계: ARKit 궤적 분석 및 후보 매칭 그래프 생성 명세서](0002-1단계-ARKit-궤적분석-및-후보매칭그래프-생성명세서.md)**
+   - 240장 `transforms.json` 실측 데이터 구조 및 회전/거리 분석
+   - 28,680쌍 ➔ 약 1,200쌍 압축 알고리즘 (시간 인접 + 적정 시차 베이스라인 + 실측 37개 루프 후보)
+   - CLI 도구 인터페이스, 입출력 포맷 및 TDD 단위 테스트 명세
+
+3. **[0003 — 2단계: 순차 삼각측량 및 Local Bundle Adjustment 명세서](0003-2단계-순차삼각측량-및-Local-BA-명세서.md)**
+   - PyCOLMAP `point_triangulator` 기반 초기 3D 희소점 클라우드 구축
+   - 슬라이딩 윈도우(Sliding Window) 기반 Local BA 및 ARKit 상대 모션 제약(BetweenFactor)
+   - 10개 컴포넌트 단절 문제 해소 및 실시간 3D 점 확장 전략
+
+4. **[0004 — 3단계: DA3 다시점 깊이 검증 및 3DGS 통합 명세서](0004-3단계-DA3-다시점깊이-검증-및-3DGS통합-명세서.md)**
+   - Depth Anything 3 자세 조건부(Pose-Conditioned) 다중시점 추론 파이프라인
+   - 다시점 깊이 일관성(Multi-view Depth Consistency) 검증 필터 ($M_{\text{valid}}$)
+   - 3DGS 렌더러 결합: 가우시안 표면 밀착 및 허공 부유물 억제 손실 함수
+
+5. **[0005 — 신뢰도 가중 다시점 깊이 전파 및 융합 상세 설계서](0005-신뢰도-가중-다시점-깊이전파-및-융합-상세설계서.md)**
+   - 3계층 깊이 시스템: Tier 1(SfM 앵커), Tier 2(ARKit 포즈 워핑 전파), Tier 3(스케일 정렬 AI 깊이)
+   - 3D 역투영 $\to$ 월드 변환 $\to$ 타겟 재투영 수식 및 Z-Buffer 가림(Occlusion) 처리
+   - 신뢰도 가중 융합 공식 및 5단계 비교 실험(Ablation) 매트릭스 규격
+
+6. **[0006 — ChatGPT 원본 구현 설계서 v0.1 연동](0006-ChatGPT-구현설계서-v0.1-연동.md)**
+   - ChatGPT가 제안한 전체 디렉터리 레이아웃(`work/hybrid_v01/`), `.npz` 데이터 계약, P0~P8 엔지니어링 절차 원문 보존
