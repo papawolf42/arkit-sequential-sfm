@@ -7,6 +7,17 @@ import math
 import numpy as np
 
 
+def world_to_camera(camera_to_world):
+    """유효한 강체 c2w 행렬을 w2c로 바꾼다(회전의 역은 전치)."""
+    matrix = np.asarray(camera_to_world, dtype=float)
+    rotation = matrix[:3, :3]
+    position = matrix[:3, 3]
+    inverse = np.eye(4)
+    inverse[:3, :3] = rotation.T
+    inverse[:3, 3] = -rotation.T @ position
+    return inverse
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('transforms', type=Path, help='Path to transforms.json')
