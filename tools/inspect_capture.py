@@ -23,10 +23,21 @@ if __name__ == '__main__':
         matrix = frames[0]['transform_matrix']
         camera_position = [matrix[0][3], matrix[1][3], matrix[2][3]]
 
+    # ARKit 추정 위치 사이의 직선거리이며 실제 이동 거리의 정답은 아니다.
+    first_pair_distance = None
+    if len(frames) >= 2:
+        first_matrix = frames[0]['transform_matrix']
+        next_matrix = frames[1]['transform_matrix']
+        dx = next_matrix[0][3] - first_matrix[0][3]
+        dy = next_matrix[1][3] - first_matrix[1][3]
+        dz = next_matrix[2][3] - first_matrix[2][3]
+        first_pair_distance = (dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
+
     print(json.dumps({
         'frame_count': len(frames),
         'first_frame': frames[0] if frames else None,
         'first_image_exists': first_image.is_file() if first_image is not None else None,
         'missing_images': missing_images,
         'first_camera_position': camera_position,
+        'first_pair_distance_m': first_pair_distance,
     }, indent=2))

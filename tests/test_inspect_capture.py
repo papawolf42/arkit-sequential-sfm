@@ -36,6 +36,7 @@ def test_inspect_capture_prints_count_first_frame_and_image_existence(tmp_path, 
         'frame_count': 1, 'first_frame': frame, 'first_image_exists': image_exists,
         'missing_images': [] if image_exists else [frame['file_path']],
         'first_camera_position': [10, 2, 3],
+        'first_pair_distance_m': None,
     }
 
 
@@ -44,7 +45,9 @@ def test_inspect_capture_finds_missing_second_image(tmp_path):
         {'file_path': 'first.jpg', 'transform_matrix': [
             [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1],
         ]},
-        {'file_path': 'second.jpg'},
+        {'file_path': 'second.jpg', 'transform_matrix': [
+            [1, 0, 0, 3], [0, 1, 0, 4], [0, 0, 1, 12], [0, 0, 0, 1],
+        ]},
     ]
     capture = tmp_path / 'transforms.json'
     capture.write_text(json.dumps({'frames': frames}), encoding='utf-8')
@@ -58,3 +61,4 @@ def test_inspect_capture_finds_missing_second_image(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)['missing_images'] == ['second.jpg']
+    assert json.loads(result.stdout)['first_pair_distance_m'] == 13
