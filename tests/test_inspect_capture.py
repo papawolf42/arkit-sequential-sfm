@@ -9,7 +9,15 @@ import pytest
 
 @pytest.mark.parametrize('image_exists', [True, False])
 def test_inspect_capture_prints_count_first_frame_and_image_existence(tmp_path, image_exists):
-    frame = {'file_path': 'images/example.jpg', 'timestamp': 12.5}
+    frame = {
+        'file_path': 'images/example.jpg', 'timestamp': 12.5,
+        'transform_matrix': [
+            [0, -1, 0, 10],
+            [1, 0, 0, 2],
+            [0, 0, 1, 3],
+            [0, 0, 0, 1],
+        ],
+    }
     capture = tmp_path / 'transforms.json'
     capture.write_text(json.dumps({'frames': [frame]}), encoding='utf-8')
     if image_exists:
@@ -27,11 +35,17 @@ def test_inspect_capture_prints_count_first_frame_and_image_existence(tmp_path, 
     assert json.loads(result.stdout) == {
         'frame_count': 1, 'first_frame': frame, 'first_image_exists': image_exists,
         'missing_images': [] if image_exists else [frame['file_path']],
+        'first_camera_position': [10, 2, 3],
     }
 
 
 def test_inspect_capture_finds_missing_second_image(tmp_path):
-    frames = [{'file_path': 'first.jpg'}, {'file_path': 'second.jpg'}]
+    frames = [
+        {'file_path': 'first.jpg', 'transform_matrix': [
+            [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1],
+        ]},
+        {'file_path': 'second.jpg'},
+    ]
     capture = tmp_path / 'transforms.json'
     capture.write_text(json.dumps({'frames': frames}), encoding='utf-8')
     (tmp_path / 'first.jpg').write_bytes(b'file existence only')

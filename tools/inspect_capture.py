@@ -18,9 +18,15 @@ if __name__ == '__main__':
         if not image.is_file():
             missing_images.append(frame['file_path'])
 
+    camera_position = None
+    if frames:
+        matrix = frames[0]['transform_matrix']
+        camera_position = [matrix[0][3], matrix[1][3], matrix[2][3]]
+
     print(json.dumps({
         'frame_count': len(frames),
         'first_frame': frames[0] if frames else None,
         'first_image_exists': first_image.is_file() if first_image is not None else None,
         'missing_images': missing_images,
+        'first_camera_position': camera_position,
     }, indent=2))
