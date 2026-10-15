@@ -18,6 +18,18 @@ def world_to_camera(camera_to_world):
     return inverse
 
 
+def project_world_point(point, frame):
+    """월드 점을 저장된 센서 이미지의 픽셀로 투영한다(OpenGL c2w)."""
+    camera_point = world_to_camera(frame['transform_matrix']) @ np.append(point, 1)
+    x, y, z = camera_point[:3]
+    depth = -z
+    if depth <= 0:
+        return None
+    u = frame['fl_x'] * x / depth + frame['cx']
+    v = frame['cy'] - frame['fl_y'] * y / depth
+    return float(u), float(v)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('transforms', type=Path, help='Path to transforms.json')
