@@ -2,6 +2,9 @@
 import argparse
 import json
 from pathlib import Path
+import math
+
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -27,6 +30,7 @@ if __name__ == '__main__':
 
     # ARKit 추정 위치 사이의 직선거리이며 실제 이동 거리의 정답은 아니다.
     first_pair_distance = None
+    first_pair_rotation = None
     if len(frames) >= 2:
         first_matrix = frames[0]['transform_matrix']
         next_matrix = frames[1]['transform_matrix']
@@ -34,6 +38,14 @@ if __name__ == '__main__':
         dy = next_matrix[1][3] - first_matrix[1][3]
         dz = next_matrix[2][3] - first_matrix[2][3]
         first_pair_distance = (dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
+
+        first_rotation = np.array(first_matrix)[:3, :3]
+        next_rotation = np.array(next_matrix)[:3, :3]
+        relative_rotation = first_rotation.T @ next_rotation
+        cos_angle = (np.trace(relative_rotation) - 1) / 2
+        # 부동소수점 반올림 오차로 acos의 입력 범위를 벗어나지 않게 한다.
+        cos_angle = max(-1.0, min(1.0, float(cos_angle)))
+        first_pair_rotation = math.degrees(math.acos(cos_angle))
 
     print(json.dumps({
         'frame_count': len(frames),
@@ -43,4 +55,5 @@ if __name__ == '__main__':
         'first_camera_position': camera_position,
         'first_pair_distance_m': first_pair_distance,
         'first_camera_forward': camera_forward,
+        'first_pair_rotation_deg': first_pair_rotation,
     }, indent=2))

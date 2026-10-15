@@ -38,6 +38,7 @@ def test_inspect_capture_prints_count_first_frame_and_image_existence(tmp_path, 
         'first_camera_position': [10, 2, 3],
         'first_pair_distance_m': None,
         'first_camera_forward': [0, 0, -1],
+        'first_pair_rotation_deg': None,
     }
 
 
@@ -63,3 +64,26 @@ def test_inspect_capture_finds_missing_second_image(tmp_path):
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)['missing_images'] == ['second.jpg']
     assert json.loads(result.stdout)['first_pair_distance_m'] == 13
+    assert json.loads(result.stdout)['first_pair_rotation_deg'] == 0
+
+
+@pytest.mark.parametrize('rotation, expected', [
+    ([[0, -1, 0], [1, 0, 0], [0, 0, 1]], 90),
+    ([[-1, 0, 0], [0, -1, 0], [0, 0, 1]], 180),
+])
+def test_inspect_capture_measures_rotation_even_with_same_forward(tmp_path, rotation, expected):
+    first = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    second = [row + [0] for row in rotation] + [[0, 0, 0, 1]]
+    frames = [
+        {'file_path': 'first.jpg', 'transform_matrix': first},
+        {'file_path': 'second.jpg', 'transform_matrix': second},
+    ]
+    capture = tmp_path / 'transforms.json'
+    capture.write_text(json.dumps({'frames': frames}), encoding='utf-8')
+    script = Path(__file__).resolve().parents[1] / 'tools' / 'inspect_capture.py'
+    result = subprocess.run(
+        [sys.executable, str(script), str(capture)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)['first_pair_rotation_deg'] == pytest.approx(expected)
