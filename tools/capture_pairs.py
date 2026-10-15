@@ -4,6 +4,20 @@ import json
 from pathlib import Path
 
 
+def unique_pairs(pairs):
+    """여러 선정 방식에서 나온 같은 이미지 쌍을 한 번만 비교한다."""
+    result = []
+    seen = set()
+    for first, second in pairs:
+        if first == second:
+            continue
+        pair = tuple(sorted((first, second)))
+        if pair not in seen:
+            seen.add(pair)
+            result.append(pair)
+    return result
+
+
 def sequential_pairs(frames):
     """시간순 바로 다음 프레임과만 연결한다. 실제 매칭 성공을 뜻하지 않는다."""
     ordered = sorted(frames, key=lambda frame: frame['timestamp'])
@@ -18,5 +32,5 @@ if __name__ == '__main__':
     parser.add_argument('transforms', type=Path)
     args = parser.parse_args()
     manifest = json.loads(args.transforms.read_text(encoding='utf-8'))
-    for first, second in sequential_pairs(manifest['frames']):
+    for first, second in unique_pairs(sequential_pairs(manifest['frames'])):
         print(first, second)
